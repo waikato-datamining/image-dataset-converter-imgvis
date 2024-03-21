@@ -13,12 +13,12 @@ def _read(f):
 
 
 setup(
-    name="image-dataset-converter-imgaug",
-    description="Image augmentation extension for the image-dataset-converter library.",
+    name="image-dataset-converter-imgvis",
+    description="Image visualization plugins for the image-dataset-converter library.",
     long_description=(
             _read('DESCRIPTION.rst') + b'\n' +
             _read('CHANGES.rst')).decode('utf-8'),
-    url="https://github.com/waikato-datamining/image-dataset-converter-imgaug",
+    url="https://github.com/waikato-datamining/image-dataset-converter-imgvis",
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',

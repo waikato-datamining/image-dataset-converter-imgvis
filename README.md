@@ -1,5 +1,5 @@
 # image-dataset-converter-imgvis
-Visualization extension for the image-dataset-converter library.
+visualization plugins for the image-dataset-converter library.
 
 
 ## Installation

@@ -1,2 +1,2 @@
-Image augmentation extension for the image-dataset-converter library.
+Image visualization plugins for the image-dataset-converter library.
 
