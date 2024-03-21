@@ -32,16 +32,17 @@ setup(
     packages=find_namespace_packages(where='src'),
     install_requires=[
         "image-dataset-converter",
+        "opencv-python",
     ],
     version="0.0.1",
     author='Peter Reutemann',
     author_email='fracpete@waikato.ac.nz',
     entry_points={
-        "idc.readers": [
-        ],
         "idc.filters": [
+            "idc_imgvis_filters1=idc.imgvis.filter:seppl.io.Filter",
         ],
         "idc.writers": [
+            "idc_imgvis_writers1=idc.imgvis.writer:seppl.io.Writer",
         ]
     },
 )
