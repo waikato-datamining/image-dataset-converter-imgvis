@@ -1,6 +1,7 @@
 # image-dataset-converter plugins
 ## Filters
 * [add-annotation-overlay-ic](add-annotation-overlay-ic.md)
+* [add-annotation-overlay-od](add-annotation-overlay-od.md)
 
 ## Writers
 * [image-viewer](image-viewer.md)
