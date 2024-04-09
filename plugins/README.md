@@ -1,4 +1,4 @@
-# image-dataset-converter plugins
+# imgvis plugins
 ## Filters
 * [add-annotation-overlay-ic](add-annotation-overlay-ic.md)
 * [add-annotation-overlay-is](add-annotation-overlay-is.md)
