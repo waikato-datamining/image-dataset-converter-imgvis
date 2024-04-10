@@ -331,7 +331,7 @@ class AnnotationOverlayOD(Filter):
         result = []
 
         for item in make_list(data):
-            if item.annotation is None:
+            if not item.has_annotation():
                 result.append(item)
                 continue
 

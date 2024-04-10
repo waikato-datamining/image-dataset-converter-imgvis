@@ -159,7 +159,7 @@ class AnnotationOverlay(StreamWriter):
                 scale_x = self._overlay.size[0] / img.size[0]
                 scale_y = self._overlay.size[1] / img.size[1]
 
-            if item.annotation is not None:
+            if item.has_annotation():
                 draw = ImageDraw.Draw(self._overlay)
 
                 for lobj in item.annotation:
