@@ -1,5 +1,5 @@
 # image-dataset-converter-imgvis
-visualization plugins for the image-dataset-converter library.
+visualization plugins for the [image-dataset-converter](https://github.com/waikato-datamining/image-dataset-converter) library.
 
 
 ## Installation
