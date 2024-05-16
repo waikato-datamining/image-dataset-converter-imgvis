@@ -10,7 +10,7 @@ from wai.common.geometry import Point as WaiPoint
 from wai.common.adams.imaging.locateobjects import LocatedObjects, LocatedObject
 from wai.common.file.report import save
 from seppl.io import Filter
-from idc.api import ObjectDetectionData, flatten_list, make_list, INTERSECT, UNION, COMBINATIONS, intersect_over_union, to_polygons
+from idc.api import ObjectDetectionData, flatten_list, make_list, INTERSECT, UNION, COMBINATIONS, intersect_over_union, locatedobjects_to_shapely
 
 STREAM_INDEX = "stream_index"
 
@@ -171,8 +171,8 @@ class CombineAnnotations(Filter):
 
             # combine annotations
             current_annotation = item.get_absolute()
-            polygons_old = to_polygons(self._annotation)
-            polygons_new = to_polygons(current_annotation)
+            polygons_old = locatedobjects_to_shapely(self._annotation)
+            polygons_new = locatedobjects_to_shapely(current_annotation)
             matches = self._find_matches(polygons_old, polygons_new)
             combined = []
             for o, n, iou in matches:
