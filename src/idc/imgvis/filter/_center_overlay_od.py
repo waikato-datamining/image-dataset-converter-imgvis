@@ -15,7 +15,7 @@ class CenterOverlayOD(Filter):
     Adds center dots overlays (object detection) to images passing through.
     """
 
-    def __init__(self, labels: List[str] = None, label_key: str = None, radius: int = None,
+    def __init__(self, labels: List[str] = None, label_key: str = None, radius: float = None,
                  colors: List[str] = None, outline_thickness: int = None, outline_alpha: int = None,
                  fill: bool = False, fill_alpha: int = None, vary_colors: bool = False,
                  logger_name: str = None, logging_level: str = LOGGING_WARNING):
@@ -26,8 +26,8 @@ class CenterOverlayOD(Filter):
         :type labels: list
         :param label_key: the key in the meta-data that contains the label
         :type label_key: str
-        :param radius: the radius of the center dot
-        :type radius: int
+        :param radius: the radius of the center dot, if less than 1 then diameter relative to width of bbox
+        :type radius: float
         :param colors: the RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied
         :type colors: list
         :param outline_thickness: the line thickness to use for the outline, <1 to turn off
@@ -90,7 +90,7 @@ class CenterOverlayOD(Filter):
         parser = super()._create_argparser()
         parser.add_argument("--labels", type=str, metavar="LABEL", help="The labels of annotations to overlay, overlays all if omitted.", required=False, nargs="*")
         parser.add_argument("--label_key", type=str, metavar="KEY", help="The key in the meta-data that contains the label.", required=False, default=LABEL_KEY)
-        parser.add_argument("--radius", type=int, metavar="INT", help="The size of the dot/circle in pixels.", required=False, default=10)
+        parser.add_argument("--radius", type=float, metavar="FLOAT", help="The size of the dot/circle in pixels or, if <1 the diameter's relative size to the bbox width.", required=False, default=10)
         parser.add_argument("--colors", type=str, metavar="R,G,B", help="The RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied", required=False, nargs="*")
         parser.add_argument("--outline_thickness", type=int, metavar="INT", help="The line thickness to use for the outline, <1 to turn off.", required=False, default=3)
         parser.add_argument("--outline_alpha", type=int, metavar="INT", help="The alpha value to use for the outline (0: transparent, 255: opaque).", required=False, default=255)
@@ -261,8 +261,13 @@ class CenterOverlayOD(Filter):
                 rect = lobj.get_rectangle()
                 center_x = rect.left() + (rect.right() - rect.left() + 1) // 2
                 center_y = rect.top() + (rect.bottom() - rect.top() + 1) // 2
-                points.append((center_x - self.radius, center_y - self.radius))
-                points.append((center_x + self.radius, center_y + self.radius))
+                if self.radius < 1:
+                    width = rect.right() - rect.left() + 1
+                    radius = int(width / 2 * self.radius)
+                else:
+                    radius = self.radius
+                points.append((center_x - radius, center_y - radius))
+                points.append((center_x + radius, center_y + radius))
                 if self.fill:
                     draw.ellipse(tuple(points), outline=self._get_outline_color(color_label),
                                  fill=self._get_fill_color(color_label), width=self.outline_thickness)

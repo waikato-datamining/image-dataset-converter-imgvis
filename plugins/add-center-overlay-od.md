@@ -8,7 +8,7 @@ Adds center dot overlays (object detection) to images passing through.
 ```
 usage: add-center-overlay-od [-h] [-l {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
                              [-N LOGGER_NAME] [--labels [LABEL [LABEL ...]]]
-                             [--label_key KEY] [--radius INT]
+                             [--label_key KEY] [--radius FLOAT]
                              [--colors [R,G,B [R,G,B ...]]]
                              [--outline_thickness INT] [--outline_alpha INT]
                              [--fill] [--fill_alpha INT] [--vary_colors]
@@ -27,7 +27,9 @@ optional arguments:
                         omitted. (default: None)
   --label_key KEY       The key in the meta-data that contains the label.
                         (default: type)
-  --radius INT          The size of the dot/circle in pixels. (default: 10)
+  --radius FLOAT        The size of the dot/circle in pixels or, if <1 the
+                        diameter's relative size to the bbox width. (default:
+                        10)
   --colors [R,G,B [R,G,B ...]]
                         The RGB triplets (R,G,B) of custom colors to use, uses
                         default colors if not supplied (default: None)
