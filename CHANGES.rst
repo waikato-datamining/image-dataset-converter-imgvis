@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.0.2 (????-??-??)
+0.0.2 (2024-07-02)
 ------------------
 
 - added `add-center-overlay-od` overlay filter
