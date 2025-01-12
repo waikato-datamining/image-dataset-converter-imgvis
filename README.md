@@ -7,7 +7,7 @@ visualization plugins for the [image-dataset-converter](https://github.com/waika
 Via PyPI:
 
 ```bash
-pip install image-dataset-converter-imgvis
+pip install image_dataset_converter_imgvis
 ```
 
 The latest code straight from the repository:
