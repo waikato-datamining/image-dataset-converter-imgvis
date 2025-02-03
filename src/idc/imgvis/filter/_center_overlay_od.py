@@ -7,7 +7,8 @@ from PIL import Image, ImageDraw
 from seppl.io import Filter
 from wai.logging import LOGGING_WARNING
 
-from idc.api import ObjectDetectionData, flatten_list, make_list, LABEL_KEY, default_colors
+from idc.api import ObjectDetectionData, flatten_list, make_list, LABEL_KEY
+from simple_palette_utils import x11_colors
 
 
 class CenterOverlayOD(Filter):
@@ -155,7 +156,7 @@ class CenterOverlayOD(Filter):
             self.vary_colors = False
 
         self._colors = dict()
-        self._default_colors = default_colors()
+        self._default_colors = x11_colors()
         self._default_colors_index = 0
         self._custom_colors = []
         if self.colors is not None:

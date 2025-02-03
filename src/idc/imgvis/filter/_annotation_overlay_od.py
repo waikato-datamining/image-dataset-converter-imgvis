@@ -7,7 +7,8 @@ from PIL import Image, ImageDraw
 
 from wai.logging import LOGGING_WARNING
 from seppl.io import Filter
-from idc.api import ObjectDetectionData, flatten_list, make_list, load_font, text_size, DEFAULT_FONT_FAMILY, LABEL_KEY, default_colors, text_color
+from idc.api import ObjectDetectionData, flatten_list, make_list, load_font, text_size, DEFAULT_FONT_FAMILY, LABEL_KEY, text_color
+from simple_palette_utils import x11_colors
 
 
 class AnnotationOverlayOD(Filter):
@@ -197,7 +198,7 @@ class AnnotationOverlayOD(Filter):
             self.force_bbox = False
 
         self._colors = dict()
-        self._default_colors = default_colors()
+        self._default_colors = x11_colors()
         self._default_colors_index = 0
         self._custom_colors = []
         if self.colors is not None:

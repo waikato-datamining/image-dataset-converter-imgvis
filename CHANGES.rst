@@ -5,6 +5,7 @@ Changelog
 ------------------
 
 - switched to underscores in project name
+- using `simple_palette_utils` now
 
 
 0.0.2 (2024-07-02)

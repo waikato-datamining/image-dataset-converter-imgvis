@@ -7,7 +7,8 @@ from PIL import Image, ImageDraw
 from seppl.io import Filter
 from wai.logging import LOGGING_WARNING
 
-from idc.api import ImageSegmentationData, flatten_list, make_list, default_colors
+from idc.api import ImageSegmentationData, flatten_list, make_list
+from simple_palette_utils import x11_colors
 
 
 class AnnotationOverlayIS(Filter):
@@ -111,7 +112,7 @@ class AnnotationOverlayIS(Filter):
         if self.alpha is None:
             self.alpha = 64
         self._colors = dict()
-        self._default_colors = default_colors()
+        self._default_colors = x11_colors()
         self._default_colors_index = 0
         self._custom_colors = []
         if self.colors is not None:
