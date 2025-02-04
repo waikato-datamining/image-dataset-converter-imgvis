@@ -13,7 +13,7 @@ usage: combine-annotations-od [-h] [-l {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
 Combines object detection annotations from images passing through into a
 single annotation.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -l {DEBUG,INFO,WARNING,ERROR,CRITICAL}, --logging_level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
                         The logging level to use. (default: WARN)

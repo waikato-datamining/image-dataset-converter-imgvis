@@ -6,6 +6,9 @@ Changelog
 
 - switched to underscores in project name
 - using `simple_palette_utils` now
+- filters `add-annotation-overlay-is`, `add-annotation-overlay-od` and `add-center-overlay-od` are now using
+  the `ColorProvider` class to simplify the color handling and can use a color list name as well rather than
+  explicit list of R,G,B triplets
 
 
 0.0.2 (2024-07-02)

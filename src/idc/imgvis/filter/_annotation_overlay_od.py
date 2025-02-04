@@ -1,14 +1,14 @@
 import argparse
 import copy
 import io
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 
 from PIL import Image, ImageDraw
-
-from wai.logging import LOGGING_WARNING
 from seppl.io import Filter
+from simple_palette_utils import COLOR_LISTS, COLOR_LIST_X11, ColorProvider, parse_rgb, color_lists
+from wai.logging import LOGGING_WARNING
+
 from idc.api import ObjectDetectionData, flatten_list, make_list, load_font, text_size, DEFAULT_FONT_FAMILY, LABEL_KEY, text_color
-from simple_palette_utils import x11_colors
 
 
 class AnnotationOverlayOD(Filter):
@@ -19,7 +19,7 @@ class AnnotationOverlayOD(Filter):
     def __init__(self, labels: List[str] = None, label_key: str = None,
                  text_format: str = None, text_placement: str = None,
                  font_family: str = None, font_size: int = None,
-                 num_decimals: int = None, colors: List[str] = None,
+                 num_decimals: int = None, colors: Union[str, List[str]] = None,
                  outline_thickness: int = None, outline_alpha: int = None,
                  fill: bool = False, fill_alpha: int = None,
                  vary_colors: bool = False, force_bbox: bool = False,
@@ -41,7 +41,7 @@ class AnnotationOverlayOD(Filter):
         :type font_size: int
         :param num_decimals: the number of decimals to use for float numbers in the text format string
         :type num_decimals: int
-        :param colors: the RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied
+        :param colors: the color list name or list of RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied
         :type colors: list
         :param outline_thickness: the line thickness to use for the outline, <1 to turn off
         :type outline_thickness: int
@@ -68,6 +68,8 @@ class AnnotationOverlayOD(Filter):
         self.font_family = font_family
         self.font_size = font_size
         self.num_decimals = num_decimals
+        if isinstance(colors, str):
+            colors = [colors]
         self.colors = colors
         self.outline_thickness = outline_thickness
         self.outline_alpha = outline_alpha
@@ -75,15 +77,12 @@ class AnnotationOverlayOD(Filter):
         self.fill_alpha = fill_alpha
         self.vary_colors = vary_colors
         self.force_bbox = force_bbox
-        self._colors = dict()
-        self._default_colors = None
-        self._default_colors_index = None
-        self._custom_colors = None
         self._label_mapping = None
         self._font = None
         self._text_vertical = None
         self._text_horizontal = None
         self._accepted_labels = None
+        self._color_provider = None
 
     def name(self) -> str:
         """
@@ -118,7 +117,7 @@ class AnnotationOverlayOD(Filter):
         parser.add_argument("--font_family", type=str, metavar="FONTNAME", help="The name of the TTF font-family to use, note: any hyphens need escaping with backslash.", required=False, default=DEFAULT_FONT_FAMILY)
         parser.add_argument("--font_size", type=int, metavar="SIZE", help="The size of the font.", required=False, default=14)
         parser.add_argument("--num_decimals", type=int, metavar="INT", help="The number of decimals to use for float numbers in the text format string.", required=False, default=3)
-        parser.add_argument("--colors", type=str, metavar="R,G,B", help="The RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied", required=False, nargs="*")
+        parser.add_argument("-c", "--colors", type=str, metavar="R,G,B", help="The color list name (available: " + ",".join(color_lists()) + ") or list of RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied (X11 colors, without dark/light colors)", required=False, nargs="*")
         parser.add_argument("--outline_thickness", type=int, metavar="INT", help="The line thickness to use for the outline, <1 to turn off.", required=False, default=3)
         parser.add_argument("--outline_alpha", type=int, metavar="INT", help="The alpha value to use for the outline (0: transparent, 255: opaque).", required=False, default=255)
         parser.add_argument("--fill", action="store_true", help="Whether to fill the bounding boxes/polygons.", required=False)
@@ -197,76 +196,23 @@ class AnnotationOverlayOD(Filter):
         if self.force_bbox is None:
             self.force_bbox = False
 
-        self._colors = dict()
-        self._default_colors = x11_colors()
-        self._default_colors_index = 0
-        self._custom_colors = []
-        if self.colors is not None:
-            for color in self.colors:
-                self._custom_colors.append([int(x) for x in color.split(",")])
         self._label_mapping = dict()
         self._font = load_font(self.logger, self.font_family, self.font_size)
         self._text_vertical, self._text_horizontal = self.text_placement.upper().split(",")
         self._accepted_labels = None
         if (self.labels is not None) and (len(self.labels) > 0):
             self._accepted_labels = set(self.labels)
-
-    def _next_default_color(self) -> Tuple:
-        """
-        Returns the next default color.
-
-        :return: the color tuple
-        :rtype: tuple
-        """
-        if self._default_colors_index >= len(self._default_colors):
-            self._default_colors_index = 0
-        result = self._default_colors[self._default_colors_index]
-        self._default_colors_index += 1
-        return result
-
-    def _get_color(self, label: str) -> Tuple:
-        """
-        Returns the color for the label.
-
-        :param label: the label to get the color for
-        :type label: str
-        :return: the RGB color tuple
-        :rtype: tuple
-        """
-        if label not in self._colors:
-            has_custom = False
-            if label in self._label_mapping:
-                index = self._label_mapping[label]
-                if index < len(self._custom_colors):
-                    has_custom = True
-                    self._colors[label] = self._custom_colors[index]
-            if not has_custom:
-                self._colors[label] = self._next_default_color()
-        return self._colors[label]
-
-    def _get_outline_color(self, label: str) -> Tuple[int, int, int, int]:
-        """
-        Generates the color for the outline.
-
-        :param label: the label to get the color for
-        :type label: str
-        :return: the RGBA color tuple
-        :rtype: tuple
-        """
-        r, g, b = self._get_color(label)
-        return r, g, b, self.outline_alpha
-
-    def _get_fill_color(self, label: str) -> Tuple[int, int, int, int]:
-        """
-        Generates the color for the filling.
-
-        :param label: the label to get the color for
-        :type label: str
-        :return: the RGBA color tuple
-        :rtype: tuple
-        """
-        r, g, b = self._get_color(label)
-        return r, g, b, self.fill_alpha
+        color_list = COLOR_LIST_X11
+        custom_colors = None
+        if self.colors is not None:
+            # color list name?
+            if (len(self.colors) == 1) and ("," not in self.colors[0]):
+                color_list = self.colors[0]
+                if self.colors[0] not in COLOR_LISTS:
+                    raise Exception("Unknown color list '%s'! Available lists: %s" % (color_list, ",".join(sorted(COLOR_LISTS.keys()))))
+            else:
+                custom_colors = parse_rgb(self.colors)
+        self._color_provider = ColorProvider(color_list=color_list, custom_colors=custom_colors)
 
     def _expand_label(self, label: str, metadata: Dict) -> str:
         """
@@ -354,6 +300,7 @@ class AnnotationOverlayOD(Filter):
                     color_label = "object-%d" % i
                 else:
                     color_label = label
+                self._color_provider.label_mapping = self._label_mapping
 
                 # assemble polygon
                 points = []
@@ -369,10 +316,10 @@ class AnnotationOverlayOD(Filter):
                     points.append((rect.right(), rect.bottom()))
                     points.append((rect.left(), rect.bottom()))
                 if self.fill:
-                    draw.polygon(tuple(points), outline=self._get_outline_color(color_label),
-                                 fill=self._get_fill_color(color_label), width=self.outline_thickness)
+                    draw.polygon(tuple(points), outline=self._color_provider.get_color(color_label, alpha=self.outline_alpha),
+                                 fill=self._color_provider.get_color(color_label, alpha=self.fill_alpha), width=self.outline_thickness)
                 else:
-                    draw.polygon(tuple(points), outline=self._get_outline_color(color_label),
+                    draw.polygon(tuple(points), outline=self._color_provider.get_color(color_label, alpha=self.outline_alpha),
                                  width=self.outline_thickness)
 
                 # output text
@@ -380,8 +327,8 @@ class AnnotationOverlayOD(Filter):
                     text = self._expand_label(label, lobj.metadata)
                     rect = lobj.get_rectangle()
                     x, y, w, h = self._text_coords(text, rect)
-                    draw.rectangle((x, y, x + w, y + h), fill=self._get_outline_color(color_label))
-                    draw.text((x, y), text, font=self._font, fill=text_color(self._get_color(color_label)))
+                    draw.rectangle((x, y, x + w, y + h), fill=self._color_provider.get_color(color_label, alpha=self.outline_alpha))
+                    draw.text((x, y), text, font=self._font, fill=text_color(self._color_provider.get_color(color_label)))
 
             img_pil.paste(overlay, (0, 0), mask=overlay)
 

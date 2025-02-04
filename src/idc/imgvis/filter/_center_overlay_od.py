@@ -1,14 +1,14 @@
 import argparse
 import copy
 import io
-from typing import List, Tuple
+from typing import List, Union
 
 from PIL import Image, ImageDraw
 from seppl.io import Filter
+from simple_palette_utils import COLOR_LISTS, COLOR_LIST_X11, ColorProvider, parse_rgb, color_lists
 from wai.logging import LOGGING_WARNING
 
 from idc.api import ObjectDetectionData, flatten_list, make_list, LABEL_KEY
-from simple_palette_utils import x11_colors
 
 
 class CenterOverlayOD(Filter):
@@ -17,7 +17,7 @@ class CenterOverlayOD(Filter):
     """
 
     def __init__(self, labels: List[str] = None, label_key: str = None, radius: float = None,
-                 colors: List[str] = None, outline_thickness: int = None, outline_alpha: int = None,
+                 colors: Union[str, List[str]] = None, outline_thickness: int = None, outline_alpha: int = None,
                  fill: bool = False, fill_alpha: int = None, vary_colors: bool = False,
                  logger_name: str = None, logging_level: str = LOGGING_WARNING):
         """
@@ -29,7 +29,7 @@ class CenterOverlayOD(Filter):
         :type label_key: str
         :param radius: the radius of the center dot, if less than 1 then diameter relative to width of bbox
         :type radius: float
-        :param colors: the RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied
+        :param colors: the color list name or list of RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied
         :type colors: list
         :param outline_thickness: the line thickness to use for the outline, <1 to turn off
         :type outline_thickness: int
@@ -50,18 +50,17 @@ class CenterOverlayOD(Filter):
         self.labels = labels
         self.label_key = label_key
         self.radius = radius
+        if isinstance(colors, str):
+            colors = [colors]
         self.colors = colors
         self.outline_thickness = outline_thickness
         self.outline_alpha = outline_alpha
         self.fill = fill
         self.fill_alpha = fill_alpha
         self.vary_colors = vary_colors
-        self._colors = dict()
-        self._default_colors = None
-        self._default_colors_index = None
-        self._custom_colors = None
         self._label_mapping = None
         self._accepted_labels = None
+        self._color_provider = None
 
     def name(self) -> str:
         """
@@ -92,7 +91,7 @@ class CenterOverlayOD(Filter):
         parser.add_argument("--labels", type=str, metavar="LABEL", help="The labels of annotations to overlay, overlays all if omitted.", required=False, nargs="*")
         parser.add_argument("--label_key", type=str, metavar="KEY", help="The key in the meta-data that contains the label.", required=False, default=LABEL_KEY)
         parser.add_argument("--radius", type=float, metavar="FLOAT", help="The size of the dot/circle in pixels or, if <1 the diameter's relative size to the bbox width.", required=False, default=10)
-        parser.add_argument("--colors", type=str, metavar="R,G,B", help="The RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied", required=False, nargs="*")
+        parser.add_argument("-c", "--colors", type=str, metavar="R,G,B", help="The color list name (available: " + ",".join(color_lists()) + ") or list of RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied (X11 colors, without dark/light colors)", required=False, nargs="*")
         parser.add_argument("--outline_thickness", type=int, metavar="INT", help="The line thickness to use for the outline, <1 to turn off.", required=False, default=3)
         parser.add_argument("--outline_alpha", type=int, metavar="INT", help="The alpha value to use for the outline (0: transparent, 255: opaque).", required=False, default=255)
         parser.add_argument("--fill", action="store_true", help="Whether to fill the bounding boxes/polygons.", required=False)
@@ -155,74 +154,21 @@ class CenterOverlayOD(Filter):
         if self.vary_colors is None:
             self.vary_colors = False
 
-        self._colors = dict()
-        self._default_colors = x11_colors()
-        self._default_colors_index = 0
-        self._custom_colors = []
-        if self.colors is not None:
-            for color in self.colors:
-                self._custom_colors.append([int(x) for x in color.split(",")])
         self._label_mapping = dict()
         self._accepted_labels = None
         if (self.labels is not None) and (len(self.labels) > 0):
             self._accepted_labels = set(self.labels)
-
-    def _next_default_color(self) -> Tuple:
-        """
-        Returns the next default color.
-
-        :return: the color tuple
-        :rtype: tuple
-        """
-        if self._default_colors_index >= len(self._default_colors):
-            self._default_colors_index = 0
-        result = self._default_colors[self._default_colors_index]
-        self._default_colors_index += 1
-        return result
-
-    def _get_color(self, label: str) -> Tuple:
-        """
-        Returns the color for the label.
-
-        :param label: the label to get the color for
-        :type label: str
-        :return: the RGB color tuple
-        :rtype: tuple
-        """
-        if label not in self._colors:
-            has_custom = False
-            if label in self._label_mapping:
-                index = self._label_mapping[label]
-                if index < len(self._custom_colors):
-                    has_custom = True
-                    self._colors[label] = self._custom_colors[index]
-            if not has_custom:
-                self._colors[label] = self._next_default_color()
-        return self._colors[label]
-
-    def _get_outline_color(self, label: str) -> Tuple[int, int, int, int]:
-        """
-        Generates the color for the outline.
-
-        :param label: the label to get the color for
-        :type label: str
-        :return: the RGBA color tuple
-        :rtype: tuple
-        """
-        r, g, b = self._get_color(label)
-        return r, g, b, self.outline_alpha
-
-    def _get_fill_color(self, label: str) -> Tuple[int, int, int, int]:
-        """
-        Generates the color for the filling.
-
-        :param label: the label to get the color for
-        :type label: str
-        :return: the RGBA color tuple
-        :rtype: tuple
-        """
-        r, g, b = self._get_color(label)
-        return r, g, b, self.fill_alpha
+        color_list = COLOR_LIST_X11
+        custom_colors = None
+        if self.colors is not None:
+            # color list name?
+            if (len(self.colors) == 1) and ("," not in self.colors[0]):
+                color_list = self.colors[0]
+                if self.colors[0] not in COLOR_LISTS:
+                    raise Exception("Unknown color list '%s'! Available lists: %s" % (color_list, ",".join(sorted(COLOR_LISTS.keys()))))
+            else:
+                custom_colors = parse_rgb(self.colors)
+        self._color_provider = ColorProvider(color_list=color_list, custom_colors=custom_colors)
 
     def _do_process(self, data):
         """
@@ -256,6 +202,7 @@ class CenterOverlayOD(Filter):
                     color_label = "object-%d" % i
                 else:
                     color_label = label
+                self._color_provider.label_mapping = self._label_mapping
 
                 # assemble polygon
                 points = []
@@ -270,10 +217,10 @@ class CenterOverlayOD(Filter):
                 points.append((center_x - radius, center_y - radius))
                 points.append((center_x + radius, center_y + radius))
                 if self.fill:
-                    draw.ellipse(tuple(points), outline=self._get_outline_color(color_label),
-                                 fill=self._get_fill_color(color_label), width=self.outline_thickness)
+                    draw.ellipse(tuple(points), outline=self._color_provider.get_color(color_label, alpha=self.outline_alpha),
+                                 fill=self._color_provider.get_color(color_label, alpha=self.fill_alpha), width=self.outline_thickness)
                 else:
-                    draw.ellipse(tuple(points), outline=self._get_outline_color(color_label),
+                    draw.ellipse(tuple(points), outline=self._color_provider.get_color(color_label, alpha=self.outline_alpha),
                                  width=self.outline_thickness)
 
             img_pil.paste(overlay, (0, 0), mask=overlay)

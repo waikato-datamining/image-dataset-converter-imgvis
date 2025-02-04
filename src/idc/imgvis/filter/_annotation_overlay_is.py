@@ -1,14 +1,14 @@
 import argparse
 import copy
 import io
-from typing import List, Tuple
+from typing import List, Union
 
 from PIL import Image, ImageDraw
 from seppl.io import Filter
+from simple_palette_utils import COLOR_LISTS, COLOR_LIST_X11, ColorProvider, parse_rgb, color_lists
 from wai.logging import LOGGING_WARNING
 
 from idc.api import ImageSegmentationData, flatten_list, make_list
-from simple_palette_utils import x11_colors
 
 
 class AnnotationOverlayIS(Filter):
@@ -16,16 +16,16 @@ class AnnotationOverlayIS(Filter):
     Adds the image classification label on top of images passing through.
     """
 
-    def __init__(self, labels: List[str] = None, alpha: int = None, colors: List[str] = None,
+    def __init__(self, labels: List[str] = None, alpha: int = None, colors: Union[str, List[str]] = None,
                  logger_name: str = None, logging_level: str = LOGGING_WARNING):
         """
         Initializes the filter.
 
         :param labels: the labels of annotations to overlay, overlays all if omitted
         :type labels: list
-        :param alpha: the alpha value to use for overlaying the annotations (0: transparent, 255: opaque)
+        :param alpha: the alpha value to use for overlaying the annotati    ons (0: transparent, 255: opaque)
         :type alpha: int
-        :param colors: the RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied
+        :param colors: the color list name or list of RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied
         :type colors: list
         :param logger_name: the name to use for the logger
         :type logger_name: str
@@ -35,13 +35,12 @@ class AnnotationOverlayIS(Filter):
         super().__init__(logger_name=logger_name, logging_level=logging_level)
         self.labels = labels
         self.alpha = alpha
+        if isinstance(colors, str):
+            colors = [colors]
         self.colors = colors
-        self._colors = None
-        self._default_colors = None
-        self._default_colors_index = None
-        self._custom_colors = None
         self._accepted_labels = None
         self._label_mapping = None
+        self._color_provider = None
 
     def name(self) -> str:
         """
@@ -70,7 +69,7 @@ class AnnotationOverlayIS(Filter):
         """
         parser = super()._create_argparser()
         parser.add_argument("--labels", type=str, metavar="LABEL", help="The labels of annotations to overlay, overlays all if omitted.", required=False, nargs="*")
-        parser.add_argument("-c", "--colors", type=str, metavar="R,G,B", help="The RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied", required=False, nargs="*")
+        parser.add_argument("-c", "--colors", type=str, metavar="R,G,B", help="The color list name (available: " + ",".join(color_lists()) + ") or list of RGB triplets (R,G,B) of custom colors to use, uses default colors if not supplied (X11 colors, without dark/light colors)", required=False, nargs="*")
         parser.add_argument("-a", "--alpha", type=int, metavar="INT", help="The alpha value to use for overlaying the annotations (0: transparent, 255: opaque).", required=False, default=64)
         return parser
 
@@ -111,50 +110,20 @@ class AnnotationOverlayIS(Filter):
         super().initialize()
         if self.alpha is None:
             self.alpha = 64
-        self._colors = dict()
-        self._default_colors = x11_colors()
-        self._default_colors_index = 0
-        self._custom_colors = []
-        if self.colors is not None:
-            for color in self.colors:
-                self._custom_colors.append([int(x) for x in color.split(",")])
         self._accepted_labels = None
         if (self.labels is not None) and (len(self.labels) > 0):
             self._accepted_labels = set(self.labels)
-
-    def _next_default_color(self) -> Tuple:
-        """
-        Returns the next default color.
-
-        :return: the color tuple
-        :rtype: tuple
-        """
-        if self._default_colors_index >= len(self._default_colors):
-            self._default_colors_index = 0
-        result = self._default_colors[self._default_colors_index]
-        self._default_colors_index += 1
-        return result
-
-    def _get_color(self, label: str) -> Tuple[int, int, int, int]:
-        """
-        Returns the color for the label.
-
-        :param label: the label to get the color for
-        :type label: str
-        :return: the RGBA color tuple
-        :rtype: tuple
-        """
-        if label not in self._colors:
-            has_custom = False
-            if label in self._label_mapping:
-                index = self._label_mapping[label]
-                if index < len(self._custom_colors):
-                    has_custom = True
-                    self._colors[label] = self._custom_colors[index]
-            if not has_custom:
-                self._colors[label] = self._next_default_color()
-        r, g, b = self._colors[label]
-        return r, g, b, self.alpha
+        color_list = COLOR_LIST_X11
+        custom_colors = None
+        if self.colors is not None:
+            # color list name?
+            if (len(self.colors) == 1) and ("," not in self.colors[0]):
+                color_list = self.colors[0]
+                if self.colors[0] not in COLOR_LISTS:
+                    raise Exception("Unknown color list '%s'! Available lists: %s" % (color_list, ",".join(sorted(COLOR_LISTS.keys()))))
+            else:
+                custom_colors = parse_rgb(self.colors)
+        self._color_provider = ColorProvider(color_list=color_list, custom_colors=custom_colors)
 
     def _do_process(self, data):
         """
@@ -172,6 +141,7 @@ class AnnotationOverlayIS(Filter):
             self._label_mapping = dict()
             for index, label in enumerate(item.annotation.labels):
                 self._label_mapping[label] = index
+            self._color_provider.label_mapping = self._label_mapping
 
             # create overlay for annotations
             overlay = Image.new('RGBA', img_pil.size, (0, 0, 0, 0))
@@ -186,7 +156,7 @@ class AnnotationOverlayIS(Filter):
                 updated = True
                 mask = item.annotation.layers[label]
                 mask = Image.fromarray(mask, "L")
-                draw.bitmap((0, 0), mask, fill=self._get_color(label))
+                draw.bitmap((0, 0), mask, fill=self._color_provider.get_color(label, alpha=self.alpha))
 
             if updated:
                 # add overlay
