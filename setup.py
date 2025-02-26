@@ -34,7 +34,7 @@ setup(
         "image_dataset_converter",
         "opencv-python",
     ],
-    version="0.0.2",
+    version="0.0.3",
     author='Peter Reutemann',
     author_email='fracpete@waikato.ac.nz',
     entry_points={
