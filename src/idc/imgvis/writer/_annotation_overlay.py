@@ -4,7 +4,7 @@ from typing import List
 from PIL import Image, ImageDraw
 from wai.logging import LOGGING_WARNING
 
-from seppl.placeholders import placeholder_list, PlaceholderSupporter
+from seppl.placeholders import placeholder_list, PlaceholderSupporter, expand_placeholders
 from idc.api import ObjectDetectionData, StreamWriter, make_list
 
 
@@ -119,7 +119,7 @@ class AnnotationOverlay(StreamWriter, PlaceholderSupporter):
         Outputs the overlay image.
         """
         if self._overlay is not None:
-            self._overlay.save(self.session.expand_placeholders(self.output_file), format="PNG")
+            self._overlay.save(expand_placeholders(self.output_file), format="PNG")
         else:
             self.logger().warning("No overlay generated!")
 
