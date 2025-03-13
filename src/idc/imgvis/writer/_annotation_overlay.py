@@ -4,7 +4,7 @@ from typing import List
 from PIL import Image, ImageDraw
 from wai.logging import LOGGING_WARNING
 
-from seppl import placeholder_list, PlaceholderSupporter
+from seppl.placeholders import placeholder_list, PlaceholderSupporter
 from idc.api import ObjectDetectionData, StreamWriter, make_list
 
 

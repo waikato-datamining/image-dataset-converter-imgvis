@@ -9,7 +9,7 @@ from wai.common.geometry import Polygon as WaiPolygon
 from wai.common.geometry import Point as WaiPoint
 from wai.common.adams.imaging.locateobjects import LocatedObjects, LocatedObject
 from wai.common.file.report import save
-from seppl import placeholder_list, PlaceholderSupporter
+from seppl.placeholders import placeholder_list, PlaceholderSupporter
 from seppl.io import Filter
 from idc.api import ObjectDetectionData, flatten_list, make_list, INTERSECT, UNION, COMBINATIONS, intersect_over_union, locatedobjects_to_shapely
 
