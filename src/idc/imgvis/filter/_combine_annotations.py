@@ -9,13 +9,14 @@ from wai.common.geometry import Polygon as WaiPolygon
 from wai.common.geometry import Point as WaiPoint
 from wai.common.adams.imaging.locateobjects import LocatedObjects, LocatedObject
 from wai.common.file.report import save
+from seppl import placeholder_list, PlaceholderSupporter
 from seppl.io import Filter
 from idc.api import ObjectDetectionData, flatten_list, make_list, INTERSECT, UNION, COMBINATIONS, intersect_over_union, locatedobjects_to_shapely
 
 STREAM_INDEX = "stream_index"
 
 
-class CombineAnnotations(Filter):
+class CombineAnnotations(Filter, PlaceholderSupporter):
     """
     Combines object detection annotations from images passing through into a single annotation.
     """
@@ -92,7 +93,7 @@ class CombineAnnotations(Filter):
         parser = super()._create_argparser()
         parser.add_argument("--min_iou", type=float, default=0.7, help="The minimum IoU (intersect over union) to use for identifying objects that overlap", required=False)
         parser.add_argument("--combination", choices=COMBINATIONS, default=INTERSECT, help="how to combine the annotations (%s); the '%s' key in the meta-data contains the stream index" % ("|".join(COMBINATIONS), STREAM_INDEX), required=False)
-        parser.add_argument("-o", "--output_file", type=str, metavar="FILE", help="The .report file to write the combined annotations to.", required=False, default="./combined.report")
+        parser.add_argument("-o", "--output_file", type=str, metavar="FILE", help="The .report file to write the combined annotations to. " + placeholder_list(obj=self), required=False, default="./combined.report")
         return parser
 
     def _apply_args(self, ns: argparse.Namespace):
@@ -226,5 +227,6 @@ class CombineAnnotations(Filter):
         super().finalize()
         if self._annotation is not None:
             report = self._annotation.to_report()
-            self.logger().info("Writing combined annotations to: %s" % self.output_file)
-            save(report, self.output_file)
+            output_file = self.session.expand_placeholders(self.output_file)
+            self.logger().info("Writing combined annotations to: %s" % output_file)
+            save(report, output_file)

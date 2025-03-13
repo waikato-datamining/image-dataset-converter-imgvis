@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.0.4 (????-??-??)
+------------------
+
+- added support for placeholders: `combine-annotations-od`, `to-annotation-overlay-od`
+
+
 0.0.3 (2025-02-26)
 ------------------
 

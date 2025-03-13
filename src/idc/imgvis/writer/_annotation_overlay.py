@@ -4,10 +4,11 @@ from typing import List
 from PIL import Image, ImageDraw
 from wai.logging import LOGGING_WARNING
 
+from seppl import placeholder_list, PlaceholderSupporter
 from idc.api import ObjectDetectionData, StreamWriter, make_list
 
 
-class AnnotationOverlay(StreamWriter):
+class AnnotationOverlay(StreamWriter, PlaceholderSupporter):
 
     def __init__(self, color: str = None, background_color: str = None, scale_to: str = None,
                  width: int = None, output_file: str = None,
@@ -71,7 +72,7 @@ class AnnotationOverlay(StreamWriter):
         parser.add_argument("-b", "--background_color", type=str, metavar="R,G,B,A", help="The color to use for the background as RGBA byte-quadruplet, e.g.: 255,255,255,255.", required=False, default="255,255,255,255")
         parser.add_argument("-s", "--scale_to", type=str, metavar="WIDTH,HEIGHT", help="The dimensions to scale all images to before overlaying them (format: width,height).", required=False, default="")
         parser.add_argument("-w", "--width", type=int, metavar="INT", help="The width to use for drawing the polygons.", required=False, default=1)
-        parser.add_argument("-o", "--output_file", type=str, metavar="FILE", help="The PNG image to write the generated overlay to.", required=False, default="./output.png")
+        parser.add_argument("-o", "--output_file", type=str, metavar="FILE", help="The PNG image to write the generated overlay to. " + placeholder_list(obj=self), required=False, default="./output.png")
         return parser
 
     def _apply_args(self, ns: argparse.Namespace):
@@ -118,7 +119,7 @@ class AnnotationOverlay(StreamWriter):
         Outputs the overlay image.
         """
         if self._overlay is not None:
-            self._overlay.save(self.output_file, format="PNG")
+            self._overlay.save(self.session.expand_placeholders(self.output_file), format="PNG")
         else:
             self.logger().warning("No overlay generated!")
 

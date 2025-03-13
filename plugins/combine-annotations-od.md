@@ -28,5 +28,12 @@ options:
                         stream index (default: intersect)
   -o FILE, --output_file FILE
                         The .report file to write the combined annotations to.
-                        (default: ./combined.report)
+                        Supported placeholders: {HOME}, {CWD}, {TMP} (default:
+                        ./combined.report)
 ```
+
+Available placeholders:
+
+* `{HOME}`: The home directory of the current user.
+* `{CWD}`: The current working directory.
+* `{TMP}`: The temp directory.
