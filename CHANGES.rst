@@ -5,6 +5,7 @@ Changelog
 ------------------
 
 - added support for placeholders: `combine-annotations-od`, `to-annotation-overlay-od`
+- using underscores now instead of dashes in dependencies (`setup.py`)
 
 
 0.0.3 (2025-02-26)
