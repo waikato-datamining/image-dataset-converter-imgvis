@@ -15,7 +15,7 @@ usage: add-annotation-overlay-od [-h] [-l {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
                                  [--outline_thickness INT]
                                  [--outline_alpha INT] [--fill]
                                  [--fill_alpha INT] [--vary_colors]
-                                 [--force_bbox]
+                                 [--force_bbox] [--bbox_outline_outwards]
 
 Adds object detection overlays to images passing through.
 
@@ -65,4 +65,7 @@ options:
                         regardless of label. (default: False)
   --force_bbox          Whether to force a bounding box even if there is a
                         polygon available. (default: False)
+  --bbox_outline_outwards
+                        Whether to draw the rectangle outline on the outside
+                        rather than inside. (default: False)
 ```

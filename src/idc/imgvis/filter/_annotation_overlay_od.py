@@ -23,6 +23,7 @@ class AnnotationOverlayOD(Filter):
                  outline_thickness: int = None, outline_alpha: int = None,
                  fill: bool = False, fill_alpha: int = None,
                  vary_colors: bool = False, force_bbox: bool = False,
+                 bbox_outline_outwards: bool = False,
                  logger_name: str = None, logging_level: str = LOGGING_WARNING):
         """
         Initializes the filter.
@@ -55,6 +56,8 @@ class AnnotationOverlayOD(Filter):
         :type vary_colors: bool
         :param force_bbox: whether to force a bounding box even if there is a polygon available
         :type force_bbox: bool
+        :param bbox_outline_outwards: whether to draw the rectangle outline on the outside rather than inside
+        :type bbox_outline_outwards: bool
         :param logger_name: the name to use for the logger
         :type logger_name: str
         :param logging_level: the logging level to use
@@ -77,6 +80,7 @@ class AnnotationOverlayOD(Filter):
         self.fill_alpha = fill_alpha
         self.vary_colors = vary_colors
         self.force_bbox = force_bbox
+        self.bbox_outline_outwards = bbox_outline_outwards
         self._label_mapping = None
         self._font = None
         self._text_vertical = None
@@ -124,6 +128,7 @@ class AnnotationOverlayOD(Filter):
         parser.add_argument("--fill_alpha", type=int, metavar="INT", help="The alpha value to use for the filling (0: transparent, 255: opaque).", required=False, default=128)
         parser.add_argument("--vary_colors", action="store_true", help="Whether to vary the colors of the outline/filling regardless of label.", required=False)
         parser.add_argument("--force_bbox", action="store_true", help="Whether to force a bounding box even if there is a polygon available.", required=False)
+        parser.add_argument("--bbox_outline_outwards", action="store_true", help="Whether to draw the rectangle outline on the outside rather than inside.", required=False)
         return parser
 
     def _apply_args(self, ns: argparse.Namespace):
@@ -148,6 +153,7 @@ class AnnotationOverlayOD(Filter):
         self.fill_alpha = ns.fill_alpha
         self.vary_colors = ns.vary_colors
         self.force_bbox = ns.force_bbox
+        self.bbox_outline_outwards = ns.bbox_outline_outwards
 
     def accepts(self) -> List:
         """
@@ -195,6 +201,8 @@ class AnnotationOverlayOD(Filter):
             self.vary_colors = False
         if self.force_bbox is None:
             self.force_bbox = False
+        if self.bbox_outline_outwards is None:
+            self.bbox_outline_outwards = False
 
         self._label_mapping = dict()
         self._font = load_font(self.logger, self.font_family, self.font_size)
@@ -310,11 +318,15 @@ class AnnotationOverlayOD(Filter):
                     for x, y in zip(poly_x, poly_y):
                         points.append((x, y))
                 else:
+                    if self.bbox_outline_outwards:
+                        outwards = self.outline_thickness
+                    else:
+                        outwards = 0
                     rect = lobj.get_rectangle()
-                    points.append((rect.left(), rect.top()))
-                    points.append((rect.right(), rect.top()))
-                    points.append((rect.right(), rect.bottom()))
-                    points.append((rect.left(), rect.bottom()))
+                    points.append((rect.left() - outwards, rect.top() - outwards))
+                    points.append((rect.right() + outwards, rect.top() - outwards))
+                    points.append((rect.right() + outwards, rect.bottom() + outwards))
+                    points.append((rect.left() - outwards, rect.bottom() + outwards))
                 if self.fill:
                     draw.polygon(tuple(points), outline=self._color_provider.get_color(color_label, alpha=self.outline_alpha),
                                  fill=self._color_provider.get_color(color_label, alpha=self.fill_alpha), width=self.outline_thickness)

@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.0.5 (????-??-??)
+------------------
+
+- added `--bbox_outline_outwards` flag to filter `add-annotation-overlay-od` to make very
+  small rectangles/points better visible by drawing the outline on the outside rather
+  than the inside of the bbox
+
+
 0.0.4 (2025-03-14)
 ------------------
 
