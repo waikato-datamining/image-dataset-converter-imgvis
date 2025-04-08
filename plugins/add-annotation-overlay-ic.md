@@ -7,9 +7,9 @@ Adds the image classification label on top of images passing through.
 
 ```
 usage: add-annotation-overlay-ic [-h] [-l {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
-                                 [-N LOGGER_NAME] [-p X,Y] [-f FONTNAME]
-                                 [-s SIZE] [-c R,G,B] [-B] [-C R,G,B]
-                                 [-M MARGIN]
+                                 [-N LOGGER_NAME] [--skip] [-p X,Y]
+                                 [-f FONTNAME] [-s SIZE] [-c R,G,B] [-B]
+                                 [-C R,G,B] [-M MARGIN]
 
 Adds the image classification label on top of images passing through.
 
@@ -20,6 +20,8 @@ options:
   -N LOGGER_NAME, --logger_name LOGGER_NAME
                         The custom name to use for the logger, uses the plugin
                         name by default (default: None)
+  --skip                Disables the plugin, removing it from the pipeline.
+                        (default: False)
   -p X,Y, --position X,Y
                         The position of the label (X,Y). (default: 5,5)
   -f FONTNAME, --font_family FONTNAME

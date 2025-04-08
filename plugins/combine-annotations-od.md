@@ -7,7 +7,7 @@ Combines object detection annotations from images passing through into a single 
 
 ```
 usage: combine-annotations-od [-h] [-l {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
-                              [-N LOGGER_NAME] [--min_iou MIN_IOU]
+                              [-N LOGGER_NAME] [--skip] [--min_iou MIN_IOU]
                               [--combination {union,intersect}] [-o FILE]
 
 Combines object detection annotations from images passing through into a
@@ -20,6 +20,8 @@ options:
   -N LOGGER_NAME, --logger_name LOGGER_NAME
                         The custom name to use for the logger, uses the plugin
                         name by default (default: None)
+  --skip                Disables the plugin, removing it from the pipeline.
+                        (default: False)
   --min_iou MIN_IOU     The minimum IoU (intersect over union) to use for
                         identifying objects that overlap (default: 0.7)
   --combination {union,intersect}

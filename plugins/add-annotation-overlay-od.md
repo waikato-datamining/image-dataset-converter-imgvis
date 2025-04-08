@@ -7,9 +7,9 @@ Adds object detection overlays to images passing through.
 
 ```
 usage: add-annotation-overlay-od [-h] [-l {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
-                                 [-N LOGGER_NAME] [--labels [LABEL ...]]
-                                 [--label_key KEY] [--text_format KEY]
-                                 [--text_placement X,Y]
+                                 [-N LOGGER_NAME] [--skip]
+                                 [--labels [LABEL ...]] [--label_key KEY]
+                                 [--text_format KEY] [--text_placement X,Y]
                                  [--font_family FONTNAME] [--font_size SIZE]
                                  [--num_decimals INT] [-c [R,G,B ...]]
                                  [--outline_thickness INT]
@@ -26,6 +26,8 @@ options:
   -N LOGGER_NAME, --logger_name LOGGER_NAME
                         The custom name to use for the logger, uses the plugin
                         name by default (default: None)
+  --skip                Disables the plugin, removing it from the pipeline.
+                        (default: False)
   --labels [LABEL ...]  The labels of annotations to overlay, overlays all if
                         omitted. (default: None)
   --label_key KEY       The key in the meta-data that contains the label.

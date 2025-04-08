@@ -6,8 +6,9 @@ Generates an image with all the annotation shapes (bbox or polygon) overlayed.
 
 ```
 usage: to-annotation-overlay-od [-h] [-l {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
-                                [-N LOGGER_NAME] [-c R,G,B,A] [-b R,G,B,A]
-                                [-s WIDTH,HEIGHT] [-w INT] [-o FILE]
+                                [-N LOGGER_NAME] [--skip] [-c R,G,B,A]
+                                [-b R,G,B,A] [-s WIDTH,HEIGHT] [-w INT]
+                                [-o FILE]
 
 Generates an image with all the annotation shapes (bbox or polygon) overlayed.
 
@@ -18,6 +19,8 @@ options:
   -N LOGGER_NAME, --logger_name LOGGER_NAME
                         The custom name to use for the logger, uses the plugin
                         name by default (default: None)
+  --skip                Disables the plugin, removing it from the pipeline.
+                        (default: False)
   -c R,G,B,A, --color R,G,B,A
                         The color to use for drawing the shapes as RGBA byte-
                         quadruplet, e.g.: 255,0,0,64. (default: 255,0,0,64)

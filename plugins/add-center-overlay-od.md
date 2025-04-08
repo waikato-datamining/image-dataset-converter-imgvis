@@ -7,7 +7,7 @@ Adds center dot overlays (object detection) to images passing through.
 
 ```
 usage: add-center-overlay-od [-h] [-l {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
-                             [-N LOGGER_NAME] [--labels [LABEL ...]]
+                             [-N LOGGER_NAME] [--skip] [--labels [LABEL ...]]
                              [--label_key KEY] [--radius FLOAT]
                              [-c [R,G,B ...]] [--outline_thickness INT]
                              [--outline_alpha INT] [--fill] [--fill_alpha INT]
@@ -22,6 +22,8 @@ options:
   -N LOGGER_NAME, --logger_name LOGGER_NAME
                         The custom name to use for the logger, uses the plugin
                         name by default (default: None)
+  --skip                Disables the plugin, removing it from the pipeline.
+                        (default: False)
   --labels [LABEL ...]  The labels of annotations to overlay, overlays all if
                         omitted. (default: None)
   --label_key KEY       The key in the meta-data that contains the label.
