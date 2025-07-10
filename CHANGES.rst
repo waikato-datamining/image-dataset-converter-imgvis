@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.0.5 (????-??-??)
+0.0.5 (2025-07-11)
 ------------------
 
 - added `--bbox_outline_outwards` flag to filter `add-annotation-overlay-od` to make very
