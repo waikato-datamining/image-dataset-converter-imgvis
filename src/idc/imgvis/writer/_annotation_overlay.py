@@ -5,7 +5,8 @@ from PIL import Image, ImageDraw
 from wai.logging import LOGGING_WARNING
 
 from seppl.placeholders import placeholder_list, PlaceholderSupporter, expand_placeholders
-from idc.api import ObjectDetectionData, StreamWriter, make_list
+from kasperl.api import make_list, StreamWriter
+from idc.api import ObjectDetectionData
 
 
 class AnnotationOverlay(StreamWriter, PlaceholderSupporter):

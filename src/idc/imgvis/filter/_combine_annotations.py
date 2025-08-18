@@ -11,7 +11,8 @@ from wai.common.adams.imaging.locateobjects import LocatedObjects, LocatedObject
 from wai.common.file.report import save
 from seppl.placeholders import placeholder_list, PlaceholderSupporter
 from seppl.io import Filter
-from idc.api import ObjectDetectionData, flatten_list, make_list, INTERSECT, UNION, COMBINATIONS, intersect_over_union, locatedobjects_to_shapely
+from kasperl.api import make_list, flatten_list
+from idc.api import ObjectDetectionData, INTERSECT, UNION, COMBINATIONS, intersect_over_union, locatedobjects_to_shapely
 
 STREAM_INDEX = "stream_index"
 

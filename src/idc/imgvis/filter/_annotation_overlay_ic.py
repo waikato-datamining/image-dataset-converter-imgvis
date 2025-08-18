@@ -6,7 +6,8 @@ from PIL import Image, ImageDraw
 
 from wai.logging import LOGGING_WARNING
 from seppl.io import Filter
-from idc.api import ImageClassificationData, flatten_list, make_list, load_font, text_size, DEFAULT_FONT_FAMILY
+from kasperl.api import make_list, flatten_list
+from idc.api import ImageClassificationData, load_font, text_size, DEFAULT_FONT_FAMILY
 
 
 class AnnotationOverlayIC(Filter):

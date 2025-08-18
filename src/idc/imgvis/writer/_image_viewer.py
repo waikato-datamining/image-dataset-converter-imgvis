@@ -5,7 +5,8 @@ import cv2
 import numpy as np
 from wai.logging import LOGGING_WARNING
 
-from idc.api import ImageData, StreamWriter, make_list
+from kasperl.api import make_list, StreamWriter
+from idc.api import ImageData
 
 
 class ImageViewer(StreamWriter):

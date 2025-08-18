@@ -8,7 +8,8 @@ from seppl.io import Filter
 from simple_palette_utils import COLOR_LISTS, COLOR_LIST_X11, ColorProvider, parse_rgb, color_lists
 from wai.logging import LOGGING_WARNING
 
-from idc.api import ImageSegmentationData, flatten_list, make_list
+from kasperl.api import make_list, flatten_list
+from idc.api import ImageSegmentationData
 
 
 class AnnotationOverlayIS(Filter):
