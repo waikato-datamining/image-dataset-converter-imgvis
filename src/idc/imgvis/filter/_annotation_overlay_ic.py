@@ -5,12 +5,12 @@ from typing import List
 from PIL import Image, ImageDraw
 
 from wai.logging import LOGGING_WARNING
-from seppl.io import Filter
+from seppl.io import BatchFilter
 from kasperl.api import make_list, flatten_list
 from idc.api import ImageClassificationData, load_font, text_size, DEFAULT_FONT_FAMILY
 
 
-class AnnotationOverlayIC(Filter):
+class AnnotationOverlayIC(BatchFilter):
     """
     Adds the image classification label on top of images passing through.
     """

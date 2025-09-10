@@ -4,7 +4,7 @@ import io
 from typing import List, Union
 
 from PIL import Image, ImageDraw
-from seppl.io import Filter
+from seppl.io import BatchFilter
 from simple_palette_utils import COLOR_LISTS, COLOR_LIST_X11, ColorProvider, parse_rgb, color_lists
 from wai.logging import LOGGING_WARNING
 
@@ -12,7 +12,7 @@ from kasperl.api import make_list, flatten_list
 from idc.api import ObjectDetectionData, LABEL_KEY
 
 
-class CenterOverlayOD(Filter):
+class CenterOverlayOD(BatchFilter):
     """
     Adds center dots overlays (object detection) to images passing through.
     """

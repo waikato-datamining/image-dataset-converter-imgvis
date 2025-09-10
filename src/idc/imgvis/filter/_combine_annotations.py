@@ -10,14 +10,14 @@ from wai.common.geometry import Point as WaiPoint
 from wai.common.adams.imaging.locateobjects import LocatedObjects, LocatedObject
 from wai.common.file.report import save
 from seppl.placeholders import placeholder_list, PlaceholderSupporter
-from seppl.io import Filter
+from seppl.io import BatchFilter
 from kasperl.api import make_list, flatten_list
 from idc.api import ObjectDetectionData, INTERSECT, UNION, COMBINATIONS, intersect_over_union, locatedobjects_to_shapely
 
 STREAM_INDEX = "stream_index"
 
 
-class CombineAnnotations(Filter, PlaceholderSupporter):
+class CombineAnnotations(BatchFilter, PlaceholderSupporter):
     """
     Combines object detection annotations from images passing through into a single annotation.
     """
