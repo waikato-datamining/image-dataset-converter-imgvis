@@ -154,12 +154,14 @@ class AnnotationOverlayIS(BatchFilter):
                 if (self._accepted_labels is not None) and (label not in self._accepted_labels):
                     continue
                 # draw overlay
+                self.logger().info("Drawing label: %s" % label)
                 updated = True
                 mask = item.annotation.layers[label]
                 mask = Image.fromarray(mask, "L")
                 draw.bitmap((0, 0), mask, fill=self._color_provider.get_color(label, alpha=self.alpha))
 
             if updated:
+                self.logger().info("Adding overlay")
                 # add overlay
                 img_pil.paste(overlay, (0, 0), mask=overlay)
                 # convert back to PIL bytes

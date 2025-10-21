@@ -328,6 +328,7 @@ class AnnotationOverlayOD(BatchFilter):
                     points.append((rect.right() + outwards, rect.top() - outwards))
                     points.append((rect.right() + outwards, rect.bottom() + outwards))
                     points.append((rect.left() - outwards, rect.bottom() + outwards))
+                self.logger().info("Drawing polygon: %s" % str(lobj))
                 if self.fill:
                     draw.polygon(tuple(points), outline=self._color_provider.get_color(color_label, alpha=self.outline_alpha),
                                  fill=self._color_provider.get_color(color_label, alpha=self.fill_alpha), width=self.outline_thickness)
@@ -338,11 +339,13 @@ class AnnotationOverlayOD(BatchFilter):
                 # output text
                 if len(self.text_format) > 0:
                     text = self._expand_label(label, lobj.metadata)
+                    self.logger().info("Drawing text: %s" % text)
                     rect = lobj.get_rectangle()
                     x, y, w, h = self._text_coords(text, rect)
                     draw.rectangle((x, y, x + w, y + h), fill=self._color_provider.get_color(color_label, alpha=self.outline_alpha))
                     draw.text((x, y), text, font=self._font, fill=text_color(self._color_provider.get_color(color_label)))
 
+            self.logger().info("Adding overlay")
             img_pil.paste(overlay, (0, 0), mask=overlay)
 
             # convert back to PIL bytes

@@ -217,6 +217,7 @@ class CenterOverlayOD(BatchFilter):
                     radius = self.radius
                 points.append((center_x - radius, center_y - radius))
                 points.append((center_x + radius, center_y + radius))
+                self.logger().info("Drawing center: %s" % str(lobj))
                 if self.fill:
                     draw.ellipse(tuple(points), outline=self._color_provider.get_color(color_label, alpha=self.outline_alpha),
                                  fill=self._color_provider.get_color(color_label, alpha=self.fill_alpha), width=self.outline_thickness)
@@ -224,6 +225,7 @@ class CenterOverlayOD(BatchFilter):
                     draw.ellipse(tuple(points), outline=self._color_provider.get_color(color_label, alpha=self.outline_alpha),
                                  width=self.outline_thickness)
 
+            self.logger().info("Adding overlay")
             img_pil.paste(overlay, (0, 0), mask=overlay)
 
             # convert back to PIL bytes

@@ -177,6 +177,7 @@ class AnnotationOverlayIC(BatchFilter):
             # label
             draw.text((self._text_x, self._text_y), item.annotation, font=self._font, fill=self._font_color)
 
+            self.logger().info("Adding overlay")
             img_pil.paste(overlay, (0, 0), mask=overlay)
 
             # convert back to PIL bytes
