@@ -6,7 +6,6 @@ Changelog
 
 - switched to `kasperl` library for base API and generic pipeline plugins
 - added logging output to the `annotation-overlay-*` and `center-overlay-od`
-- added `kasperl_plots` as dependency
 
 
 0.0.5 (2025-07-11)
