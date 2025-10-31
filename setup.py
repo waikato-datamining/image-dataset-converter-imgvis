@@ -33,6 +33,7 @@ setup(
     install_requires=[
         "image_dataset_converter",
         "opencv_python",
+        "kasperl_plots",
     ],
     version="0.0.5",
     author='Peter Reutemann',
