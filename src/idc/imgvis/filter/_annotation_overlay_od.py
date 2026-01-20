@@ -288,6 +288,7 @@ class AnnotationOverlayOD(BatchFilter):
 
         for item in make_list(data):
             if not item.has_annotation():
+                self.logger().warning("No annotations, skipping: %s" % item.image_name)
                 result.append(item)
                 continue
 

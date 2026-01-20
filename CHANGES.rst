@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.1.1 (????-??-??)
+------------------
+
+- `annotation-overlay-od` now outputs a warning message if no annotations present
+
 0.1.0 (2025-10-31)
 ------------------
 
