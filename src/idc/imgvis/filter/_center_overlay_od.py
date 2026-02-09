@@ -1,6 +1,5 @@
 import argparse
 import copy
-import io
 from typing import List, Union
 
 from PIL import Image, ImageDraw
@@ -9,7 +8,7 @@ from simple_palette_utils import COLOR_LISTS, COLOR_LIST_X11, ColorProvider, par
 from wai.logging import LOGGING_WARNING
 
 from kasperl.api import make_list, flatten_list
-from idc.api import ObjectDetectionData, LABEL_KEY
+from idc.api import ObjectDetectionData, LABEL_KEY, image_to_bytesio
 
 
 class CenterOverlayOD(BatchFilter):
@@ -229,8 +228,7 @@ class CenterOverlayOD(BatchFilter):
             img_pil.paste(overlay, (0, 0), mask=overlay)
 
             # convert back to PIL bytes
-            img_bytes = io.BytesIO()
-            img_pil.save(img_bytes, format=item.image_format)
+            img_bytes = image_to_bytesio(img_pil, item.image_format)
             item_new = ObjectDetectionData(image_name=item.image_name, data=img_bytes.getvalue(),
                                            annotation=copy.deepcopy(item.annotation), metadata=item.get_metadata())
 

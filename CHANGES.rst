@@ -5,6 +5,9 @@ Changelog
 ------------------
 
 - `annotation-overlay-od` now outputs a warning message if no annotations present
+- the `annotation-overlay-ic/-is/-od` filters now use the `image_to_bytesio` method to respect the JPEG quality
+  environment variable
+
 
 0.1.0 (2025-10-31)
 ------------------

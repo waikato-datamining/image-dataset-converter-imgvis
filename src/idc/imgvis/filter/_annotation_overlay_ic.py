@@ -1,5 +1,4 @@
 import argparse
-import io
 from typing import List
 
 from PIL import Image, ImageDraw
@@ -7,7 +6,7 @@ from PIL import Image, ImageDraw
 from wai.logging import LOGGING_WARNING
 from seppl.io import BatchFilter
 from kasperl.api import make_list, flatten_list
-from idc.api import ImageClassificationData, load_font, text_size, DEFAULT_FONT_FAMILY
+from idc.api import ImageClassificationData, load_font, text_size, DEFAULT_FONT_FAMILY, image_to_bytesio
 
 
 class AnnotationOverlayIC(BatchFilter):
@@ -181,8 +180,7 @@ class AnnotationOverlayIC(BatchFilter):
             img_pil.paste(overlay, (0, 0), mask=overlay)
 
             # convert back to PIL bytes
-            img_bytes = io.BytesIO()
-            img_pil.save(img_bytes, format=item.image_format)
+            img_bytes = image_to_bytesio(img_pil, item.image_format)
             item_new = ImageClassificationData(data=img_bytes.getvalue(), image_name=item.image_name,
                                                annotation=item.annotation, metadata=item.get_metadata())
 
