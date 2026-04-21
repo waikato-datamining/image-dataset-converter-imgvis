@@ -35,11 +35,11 @@ options:
                         1)
   -o FILE, --output_file FILE
                         The PNG image to write the generated overlay to.
-                        Supported placeholders: {HOME}, {CWD}, {TMP} (default:
+                        Supported variables: {HOME}, {CWD}, {TMP} (default:
                         ./output.png)
 ```
 
-Available placeholders:
+Available variables:
 
 * `{HOME}`: The home directory of the current user.
 * `{CWD}`: The current working directory.

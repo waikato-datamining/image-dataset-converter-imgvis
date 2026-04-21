@@ -9,7 +9,7 @@ from wai.common.geometry import Polygon as WaiPolygon
 from wai.common.geometry import Point as WaiPoint
 from wai.common.adams.imaging.locateobjects import LocatedObjects, LocatedObject
 from wai.common.file.report import save
-from seppl.placeholders import placeholder_list, PlaceholderSupporter
+from seppl.variables import VariableSupporter, variable_list
 from seppl.io import BatchFilter
 from kasperl.api import make_list, flatten_list
 from idc.api import ObjectDetectionData, INTERSECT, UNION, COMBINATIONS, intersect_over_union, locatedobjects_to_shapely
@@ -17,7 +17,7 @@ from idc.api import ObjectDetectionData, INTERSECT, UNION, COMBINATIONS, interse
 STREAM_INDEX = "stream_index"
 
 
-class CombineAnnotations(BatchFilter, PlaceholderSupporter):
+class CombineAnnotations(BatchFilter, VariableSupporter):
     """
     Combines object detection annotations from images passing through into a single annotation.
     """
@@ -94,7 +94,7 @@ class CombineAnnotations(BatchFilter, PlaceholderSupporter):
         parser = super()._create_argparser()
         parser.add_argument("--min_iou", type=float, default=0.7, help="The minimum IoU (intersect over union) to use for identifying objects that overlap", required=False)
         parser.add_argument("--combination", choices=COMBINATIONS, default=INTERSECT, help="how to combine the annotations (%s); the '%s' key in the meta-data contains the stream index" % ("|".join(COMBINATIONS), STREAM_INDEX), required=False)
-        parser.add_argument("-o", "--output_file", type=str, metavar="FILE", help="The .report file to write the combined annotations to. " + placeholder_list(obj=self), required=False, default="./combined.report")
+        parser.add_argument("-o", "--output_file", type=str, metavar="FILE", help="The .report file to write the combined annotations to. " + variable_list(obj=self), required=False, default="./combined.report")
         return parser
 
     def _apply_args(self, ns: argparse.Namespace):
@@ -228,6 +228,6 @@ class CombineAnnotations(BatchFilter, PlaceholderSupporter):
         super().finalize()
         if self._annotation is not None:
             report = self._annotation.to_report()
-            output_file = self.session.expand_placeholders(self.output_file)
+            output_file = self.session.expand_variables(self.output_file)
             self.logger().info("Writing combined annotations to: %s" % output_file)
             save(report, output_file)
