@@ -8,6 +8,7 @@ Changelog
 - the `annotation-overlay-ic/-is/-od` filters now use the `image_to_bytesio` method to respect the JPEG quality
   environment variable
 - using `seppl.variables` now
+- added option `--draw_poly_as_lines` to `add-annotation-overlay-od` to better draw line segments with a specified thickness
 
 
 0.1.0 (2025-10-31)

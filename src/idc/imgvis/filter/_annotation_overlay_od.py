@@ -24,7 +24,7 @@ class AnnotationOverlayOD(BatchFilter):
                  outline_thickness: int = None, outline_alpha: int = None,
                  fill: bool = False, fill_alpha: int = None,
                  vary_colors: bool = False, force_bbox: bool = False,
-                 bbox_outline_outwards: bool = False,
+                 bbox_outline_outwards: bool = False, draw_poly_as_lines: bool = False,
                  logger_name: str = None, logging_level: str = LOGGING_WARNING):
         """
         Initializes the filter.
@@ -59,6 +59,8 @@ class AnnotationOverlayOD(BatchFilter):
         :type force_bbox: bool
         :param bbox_outline_outwards: whether to draw the rectangle outline on the outside rather than inside
         :type bbox_outline_outwards: bool
+        :param draw_poly_as_lines: whether to draw the polygon as individual lines, e.g., when drawing line segments
+        :type draw_poly_as_lines: bool
         :param logger_name: the name to use for the logger
         :type logger_name: str
         :param logging_level: the logging level to use
@@ -82,6 +84,7 @@ class AnnotationOverlayOD(BatchFilter):
         self.vary_colors = vary_colors
         self.force_bbox = force_bbox
         self.bbox_outline_outwards = bbox_outline_outwards
+        self.draw_poly_as_lines = draw_poly_as_lines
         self._label_mapping = None
         self._font = None
         self._text_vertical = None
@@ -130,6 +133,7 @@ class AnnotationOverlayOD(BatchFilter):
         parser.add_argument("--vary_colors", action="store_true", help="Whether to vary the colors of the outline/filling regardless of label.", required=False)
         parser.add_argument("--force_bbox", action="store_true", help="Whether to force a bounding box even if there is a polygon available.", required=False)
         parser.add_argument("--bbox_outline_outwards", action="store_true", help="Whether to draw the rectangle outline on the outside rather than inside.", required=False)
+        parser.add_argument("--draw_poly_as_lines", action="store_true", help="Whether to draw the polygon as individual lines (and no fill), e.g., for drawing line segments.", required=False)
         return parser
 
     def _apply_args(self, ns: argparse.Namespace):
@@ -155,6 +159,7 @@ class AnnotationOverlayOD(BatchFilter):
         self.vary_colors = ns.vary_colors
         self.force_bbox = ns.force_bbox
         self.bbox_outline_outwards = ns.bbox_outline_outwards
+        self.draw_poly_as_lines = ns.draw_poly_as_lines
 
     def accepts(self) -> List:
         """
@@ -204,6 +209,12 @@ class AnnotationOverlayOD(BatchFilter):
             self.force_bbox = False
         if self.bbox_outline_outwards is None:
             self.bbox_outline_outwards = False
+        if self.draw_poly_as_lines is None:
+            self.draw_poly_as_lines = False
+        if self.draw_poly_as_lines:
+            if self.fill:
+                self.logger().warning("Cannot use --fill in conjunction with --draw_poly_as_lines, disabling --fill.")
+            self.fill = False
 
         self._label_mapping = dict()
         self._font = load_font(self.logger, self.font_family, self.font_size)
@@ -334,8 +345,12 @@ class AnnotationOverlayOD(BatchFilter):
                     draw.polygon(tuple(points), outline=self._color_provider.get_color(color_label, alpha=self.outline_alpha),
                                  fill=self._color_provider.get_color(color_label, alpha=self.fill_alpha), width=self.outline_thickness)
                 else:
-                    draw.polygon(tuple(points), outline=self._color_provider.get_color(color_label, alpha=self.outline_alpha),
-                                 width=self.outline_thickness)
+                    if self.draw_poly_as_lines:
+                        draw.line(tuple(points), fill=self._color_provider.get_color(color_label, alpha=self.outline_alpha),
+                                  width=self.outline_thickness)
+                    else:
+                        draw.polygon(tuple(points), outline=self._color_provider.get_color(color_label, alpha=self.outline_alpha),
+                                     width=self.outline_thickness)
 
                 # output text
                 if len(self.text_format) > 0:

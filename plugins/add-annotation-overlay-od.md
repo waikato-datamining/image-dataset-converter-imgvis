@@ -16,6 +16,7 @@ usage: add-annotation-overlay-od [-h] [-l {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
                                  [--outline_alpha INT] [--fill]
                                  [--fill_alpha INT] [--vary_colors]
                                  [--force_bbox] [--bbox_outline_outwards]
+                                 [--draw_poly_as_lines]
 
 Adds object detection overlays to images passing through.
 
@@ -68,4 +69,7 @@ options:
   --bbox_outline_outwards
                         Whether to draw the rectangle outline on the outside
                         rather than inside. (default: False)
+  --draw_poly_as_lines  Whether to draw the polygon as individual lines (and
+                        no fill), e.g., for drawing line segments. (default:
+                        False)
 ```
