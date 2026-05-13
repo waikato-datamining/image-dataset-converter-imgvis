@@ -135,7 +135,7 @@ class AnnotationOverlayIS(BatchFilter):
         result = []
 
         for item in make_list(data):
-            img_pil = item.image
+            img_pil = item.image.copy()
 
             # create label/index mapping for custom colors
             self._label_mapping = dict()

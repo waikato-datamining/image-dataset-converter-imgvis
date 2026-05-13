@@ -9,6 +9,7 @@ Changelog
   environment variable
 - using `seppl.variables` now
 - added option `--draw_poly_as_lines` to `add-annotation-overlay-od` to better draw line segments with a specified thickness
+- fix: `add-annotation-overlay-is` now works on a copy of the image
 
 
 0.1.0 (2025-10-31)
